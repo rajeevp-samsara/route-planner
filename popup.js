@@ -22,7 +22,7 @@ async function getRouteFromChatGPT(start, end) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer YOUR_OPENAI_API_KEY`
+        "Authorization": `Bearer sk-svcacct-ATVuLnKVVON-1JRA9W12HMbBXOPySZuz-6YTuPQnmPTt9j6G1ZH72LpB8IYsq_IYqCdT3BlbkFJn48UScxhz_id3iylnzGTwPVEeVwp-MMei4DP97caI0BKLjnBxxdZFf5Pojg3aP_YQAA`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",

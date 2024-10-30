@@ -16,7 +16,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
   
   async function fetchRouteFromChatGPT(start, end) {
-    const apiKey = "YOUR_OPENAI_API_KEY"; // Replace with your OpenAI API key
+    const apiKey = "sk-svcacct-ATVuLnKVVON-1JRA9W12HMbBXOPySZuz-6YTuPQnmPTt9j6G1ZH72LpB8IYsq_IYqCdT3BlbkFJn48UScxhz_id3iylnzGTwPVEeVwp-MMei4DP97caI0BKLjnBxxdZFf5Pojg3aP_YQAA"; // Replace with your OpenAI API key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
     const headers = {
       "Content-Type": "application/json",
