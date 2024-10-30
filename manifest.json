@@ -1,13 +1,19 @@
 {
     "manifest_version": 3,
-    "name": "Route Plotter",
-    "version": "1.0",
-    "description": "Takes journey start and end points, fetches a route suggestion from ChatGPT, and plots it on Google Maps.",
+    "name": "Route Plotter with Vehicle Info",
+    "version": "1.1",
+    "description": "Fetches journey and vehicle details, queries ChatGPT, and plots it on Google Maps.",
     "permissions": ["activeTab", "scripting"],
     "background": {
       "service_worker": "background.js"
     },
     "action": {
       "default_popup": "popup.html"
-    }
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ]
   }
