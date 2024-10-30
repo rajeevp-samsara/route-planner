@@ -1,33 +1,4 @@
-// Fetch vehicle details when button is clicked
-document.getElementById("fetchVehicleDetails").addEventListener("click", () => {
-  // Query the current tab for vehicle details from the DOM
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { type: "getVehicleDetails" }, (vehicleDetails) => {
-      if (vehicleDetails && vehicleDetails.name && vehicleDetails.type) {
-        // Display fetched vehicle details
-        document.getElementById("vehicleInfo").innerText = `Vehicle Name: ${vehicleDetails.name}, Type: ${vehicleDetails.type}`;
-
-        // Request vehicle height from ChatGPT based on the vehicle details
-        chrome.runtime.sendMessage(
-          { type: "fetchVehicleHeight", vehicleDetails },
-          (response) => {
-            if (response.heightInfo) {
-              document.getElementById("vehicleHeight").innerText = `Vehicle Height: ${response.heightInfo}`;
-            } else {
-              document.getElementById("vehicleHeight").innerText = "Vehicle Height: Not available.";
-            }
-          }
-        );
-      } else {
-        document.getElementById("vehicleInfo").innerText = "Vehicle Information: Not found on this page.";
-        document.getElementById("vehicleHeight").innerText = "Vehicle Height: Not available.";
-      }
-    });
-  });
-});
-
-// Fetch route when the "Get Route" button is clicked
-document.getElementById("getRoute").addEventListener("click", () => {
+document.getElementById("getRoute").addEventListener("click", async () => {
   const start = document.getElementById("start").value;
   const end = document.getElementById("end").value;
 
@@ -36,20 +7,47 @@ document.getElementById("getRoute").addEventListener("click", () => {
     return;
   }
 
-  // Send message to background.js to fetch route
-  chrome.runtime.sendMessage(
-    { type: "fetchRoute", start: start, end: end },
-    (response) => {
-      if (response.route) {
-        plotRouteOnGoogleMaps(start, end);
-      } else {
-        alert(response.error || "Unable to retrieve route from ChatGPT.");
-      }
-    }
-  );
+  const routeResponse = await getRouteFromChatGPT(start, end);
+
+  if (routeResponse) {
+    plotRouteOnGoogleMaps(routeResponse);
+  } else {
+    alert("Unable to retrieve route from ChatGPT.");
+  }
 });
 
-function plotRouteOnGoogleMaps(start, end) {
+async function getRouteFromChatGPT(start, end) {
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer YOUR_OPENAI_API_KEY`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "Provide a step-by-step driving route." },
+          { role: "user", content: `Plan a route from ${start} to ${end}.` }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0) {
+      return data.choices[0].message.content;
+    } else {
+      console.error("No route found in the response.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching route from ChatGPT:", error);
+    return null;
+  }
+}
+
+function plotRouteOnGoogleMaps(route) {
+  // Format the route response for Google Maps if necessary
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}&travelmode=driving`;
   window.open(googleMapsUrl, "_blank");
 }

@@ -1,30 +1,21 @@
 chrome.runtime.onInstalled.addListener(() => {
-    console.log("Route Plotter with Vehicle Info extension installed!");
+    console.log("Route Plotter extension installed and ready to go!");
   });
   
+  // Listener for route requests from the popup.js script
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "fetchRoute") {
       fetchRouteFromChatGPT(message.start, message.end)
-        .then((route) => sendResponse({ route, start: message.start, end: message.end }))
+        .then((route) => sendResponse({ route }))
         .catch((error) => {
           console.error("Error fetching route from ChatGPT:", error);
           sendResponse({ error: "Failed to fetch route." });
         });
-      return true;
-    }
-  
-    if (message.type === "fetchVehicleHeight") {
-      fetchVehicleHeightFromChatGPT(message.vehicleDetails)
-        .then((heightInfo) => sendResponse({ heightInfo }))
-        .catch((error) => {
-          console.error("Error fetching vehicle height:", error);
-          sendResponse({ error: "Failed to fetch vehicle height." });
-        });
-      return true;
+      return true; // Keeps the message channel open for asynchronous response
     }
   });
   
-  async function fetchVehicleHeightFromChatGPT(vehicleDetails) {
+  async function fetchRouteFromChatGPT(start, end) {
     const apiKey = "YOUR_OPENAI_API_KEY"; // Replace with your OpenAI API key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
     const headers = {
@@ -34,8 +25,8 @@ chrome.runtime.onInstalled.addListener(() => {
     const body = JSON.stringify({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: "You are an assistant knowledgeable about vehicle dimensions." },
-        { role: "user", content: `What is the height of a ${vehicleDetails.name} ${vehicleDetails.type}?` }
+        { role: "system", content: "Provide a step-by-step driving route." },
+        { role: "user", content: `Plan a route from ${start} to ${end}.` },
       ],
     });
   
@@ -49,6 +40,6 @@ chrome.runtime.onInstalled.addListener(() => {
     if (data.choices && data.choices.length > 0) {
       return data.choices[0].message.content;
     } else {
-      throw new Error("No vehicle height found in ChatGPT response.");
+      throw new Error("No route found in the ChatGPT response.");
     }
   }
