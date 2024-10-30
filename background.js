@@ -2,11 +2,10 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log("Route Plotter extension installed and ready to go!");
   });
   
-  // Listener for route requests from the popup.js script
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "fetchRoute") {
       fetchRouteFromChatGPT(message.start, message.end)
-        .then((route) => sendResponse({ route }))
+        .then((route) => sendResponse({ route, start: message.start, end: message.end }))
         .catch((error) => {
           console.error("Error fetching route from ChatGPT:", error);
           sendResponse({ error: "Failed to fetch route." });
@@ -38,7 +37,10 @@ chrome.runtime.onInstalled.addListener(() => {
     const data = await response.json();
   
     if (data.choices && data.choices.length > 0) {
-      return data.choices[0].message.content;
+      const chatResponse = data.choices[0].message.content;
+      return chatResponse.includes("from") && chatResponse.includes("to")
+        ? chatResponse
+        : null;
     } else {
       throw new Error("No route found in the ChatGPT response.");
     }
