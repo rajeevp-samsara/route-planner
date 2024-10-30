@@ -12,8 +12,12 @@ document.getElementById("getRoute").addEventListener("click", () => {
     { type: "fetchRoute", start: start, end: end },
     (response) => {
       if (response.route) {
-        // Plot the route, falling back to original start and end if route is null
-        plotRouteOnGoogleMaps(response.start, response.end);
+        // Fetch the latest start and end values directly from the HTML input
+        const startInput = document.getElementById("start").value;
+        const endInput = document.getElementById("end").value;
+
+        // Plot the route using the latest values from the HTML inputs
+        plotRouteOnGoogleMaps(startInput, endInput);
       } else {
         alert(response.error || "Unable to retrieve route from ChatGPT.");
       }
